@@ -8,7 +8,7 @@
 #include "../carat/include/matrix.h"
 #include "../carat/include/getput.h"
 
-Obj FuncBravais(Obj self, Obj matr_grp)
+Obj FuncFormSpace(Obj self, Obj matr_grp)
 {
     matrix_TYP ** mat;
     int           len = LEN_LIST(matr_grp);
@@ -32,7 +32,7 @@ Obj FuncBravais(Obj self, Obj matr_grp)
         mat[i]->flags.Scalar = FALSE;
         Check_mat(mat[i]);
     }
-    int           x = 15;
+    int           x = 0;
     matrix_TYP ** return_value = formspace(mat, len, 0, &x);
     Obj           ret_list = NEW_PLIST(T_PLIST, len + 1);
     SET_LEN_PLIST(ret_list, len + 1);
@@ -66,7 +66,7 @@ Obj FuncBravais(Obj self, Obj matr_grp)
 
 // Table of functions to export
 static StructGVarFunc GVarFuncs [] = {
-    GVAR_FUNC(Bravais, 1, "matr_grp"),
+    GVAR_FUNC(FormSpace, 1, "matr_grp"),
 
     { 0 } /* Finish with an empty entry */
 };
