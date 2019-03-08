@@ -1,12 +1,12 @@
 /*
- * CaratInterface: 
+ * CaratInterface:
  */
 
-#include "src/compiled.h"          /* GAP headers */
 #include "../carat/include/bravais.h"
-#include "../carat/include/tools.h"
-#include "../carat/include/matrix.h"
 #include "../carat/include/getput.h"
+#include "../carat/include/matrix.h"
+#include "../carat/include/tools.h"
+#include "src/compiled.h" /* GAP headers */
 
 Obj FuncFormSpace(Obj self, Obj matr_grp)
 {
@@ -34,24 +34,29 @@ Obj FuncFormSpace(Obj self, Obj matr_grp)
     }
     int           x = 0;
     matrix_TYP ** return_value = formspace(mat, len, 0, &x);
-    Obj           ret_list = NEW_PLIST(T_PLIST, len + 1);
-    SET_LEN_PLIST(ret_list, len + 1);
-    ASS_LIST(ret_list, 1, ObjInt_Int(x));
+    Obj           ret_list = NEW_PLIST(T_PLIST, 0);
+    matrix_TYP * carat_return_mat;
+    int **       current_array;
+    int          symmetry;
     for (int i = 0; i < x; i++) {
-        Obj curr_ret_list = NEW_PLIST(T_PLIST, curr_dim);
-        SET_LEN_PLIST(ret_list, curr_dim);
-        for (int j = 0; j < curr_dim; j++) {
-            Obj curr_col = NEW_PLIST(T_PLIST, curr_dim);
-            SET_LEN_PLIST(curr_col, curr_dim);
-            for (int k = 0; k < curr_dim; k++) {
-                Obj curr_elm = ObjInt_Int(return_value[i]->array.SZ[j][k]);
-                ASS_LIST(curr_col, k + 1, curr_elm);
-                CHANGED_BAG(curr_col);
+        carat_return_mat = return_value[i];
+        current_array = carat_return_mat->array.SZ;
+        symmetry = carat_return_mat->flags.Symmetric;
+        Obj curr_ret_mat = NEW_PLIST(T_PLIST, 0);
+        for (int j = 0; j < carat_return_mat->rows; j++) {
+            Obj curr_row = NEW_PLIST(T_PLIST, 0);
+            for (int k = 0; k < (symmetry ? j + 1 : carat_return_mat->cols); k++) {
+                Obj curr_elm = ObjInt_Int(current_array[j][k]);
+                ASS_LIST(curr_row, k + 1, curr_elm);
+                CHANGED_BAG(curr_row);
             }
-            ASS_LIST(curr_ret_list, j + 1, curr_col);
-            CHANGED_BAG(curr_ret_list);
+            ASS_LIST(curr_ret_mat, j + 1, curr_row);
+            CHANGED_BAG(curr_ret_mat);
         }
-        ASS_LIST(ret_list, i + 2, curr_ret_list);
+        Obj matrix_hull = NEW_PLIST(T_PLIST,0);
+        ASS_LIST(matrix_hull,2,curr_ret_mat);
+        ASS_LIST(matrix_hull,1,(symmetry ? True : False ) );
+        ASS_LIST(ret_list, i + 1, matrix_hull);
         CHANGED_BAG(ret_list);
     }
     for (int i = 0; i < len; i++) {
@@ -65,7 +70,7 @@ Obj FuncFormSpace(Obj self, Obj matr_grp)
 }
 
 // Table of functions to export
-static StructGVarFunc GVarFuncs [] = {
+static StructGVarFunc GVarFuncs[] = {
     GVAR_FUNC(FormSpace, 1, "matr_grp"),
 
     { 0 } /* Finish with an empty entry */
@@ -73,12 +78,13 @@ static StructGVarFunc GVarFuncs [] = {
 
 /******************************************************************************
 **
-*F  InitKernel( <module> ) . . . . . . . . .  initialise kernel data structures
+*F  InitKernel( <module> ) . . . . . . . . .  initialise kernel data
+*structures
 */
-static Int InitKernel( StructInitInfo *module )
+static Int InitKernel(StructInitInfo * module)
 {
     /* init filters and functions */
-    InitHdlrFuncsFromTable( GVarFuncs );
+    InitHdlrFuncsFromTable(GVarFuncs);
 
     /* return success */
     return 0;
@@ -86,12 +92,13 @@ static Int InitKernel( StructInitInfo *module )
 
 /******************************************************************************
 **
-*F  InitLibrary( <module> ) . . . . . . . .  initialise library data structures
+*F  InitLibrary( <module> ) . . . . . . . .  initialise library data
+*structures
 */
-static Int InitLibrary( StructInitInfo *module )
+static Int InitLibrary(StructInitInfo * module)
 {
     /* init filters and functions */
-    InitGVarFuncsFromTable( GVarFuncs );
+    InitGVarFuncsFromTable(GVarFuncs);
 
     /* return success */
     return 0;
@@ -99,7 +106,8 @@ static Int InitLibrary( StructInitInfo *module )
 
 /******************************************************************************
 **
-*F  Init__Dynamic() . . . . . . . . . . . . . . . . . . table of init functions
+*F  Init__Dynamic() . . . . . . . . . . . . . . . . . . table of init
+*functions
 */
 static StructInitInfo module = {
     .type = MODULE_DYNAMIC,
@@ -108,7 +116,7 @@ static StructInitInfo module = {
     .initLibrary = InitLibrary,
 };
 
-StructInitInfo *Init__Dynamic( void )
+StructInitInfo * Init__Dynamic(void)
 {
     return &module;
 }
