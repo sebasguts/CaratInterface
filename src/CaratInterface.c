@@ -48,16 +48,13 @@ Obj FuncFormSpace(Obj self, Obj matr_grp)
             for (int k = 0; k < (symmetry ? j + 1 : carat_return_mat->cols); k++) {
                 Obj curr_elm = ObjInt_Int(current_array[j][k]);
                 ASS_LIST(curr_row, k + 1, curr_elm);
-                CHANGED_BAG(curr_row);
             }
             ASS_LIST(curr_ret_mat, j + 1, curr_row);
-            CHANGED_BAG(curr_ret_mat);
         }
         Obj matrix_hull = NEW_PLIST(T_PLIST,0);
         ASS_LIST(matrix_hull,2,curr_ret_mat);
         ASS_LIST(matrix_hull,1,(symmetry ? True : False ) );
         ASS_LIST(ret_list, i + 1, matrix_hull);
-        CHANGED_BAG(ret_list);
     }
     for (int i = 0; i < len; i++) {
         free_mat(mat[i]);
